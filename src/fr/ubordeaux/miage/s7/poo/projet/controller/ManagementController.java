@@ -14,8 +14,9 @@ public class ManagementController {
 
     public void showManagementView() {
         var biens = mainController.getBiens();
+        var locataires = mainController.getLocataires(); 
 
-        ManagementView managementView = new ManagementView(stage, mainController, biens);
+        ManagementView managementView = new ManagementView(stage, mainController, biens, locataires);
         managementView.show();
     }
 }

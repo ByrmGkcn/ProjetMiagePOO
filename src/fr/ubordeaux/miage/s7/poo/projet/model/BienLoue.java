@@ -12,6 +12,9 @@ public class BienLoue implements State {
             case VENDRE:
                 model.setCurrentState(new BienVendu());
                 break;
+            case DISPONIBLE:
+            	model.setCurrentState(new BienDisponible());
+            	break;
             default:
                 throw new IllegalStateException("Événement non pris en charge dans cet état.");
         }

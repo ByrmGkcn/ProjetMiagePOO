@@ -2,7 +2,8 @@ package fr.ubordeaux.miage.s7.poo.projet.model;
 
 public enum Event {
     LOUER("LOUER"),
-    VENDRE("VENDRE");
+    VENDRE("VENDRE"),
+    DISPONIBLE("DISPONIBLE");
 
     private String text;
 

@@ -26,7 +26,10 @@ public class HomeView {
         Button tenantsButton = new Button("Locataire");
         tenantsButton.setOnAction(e -> mainController.openLocataireView());
 
-        root.getChildren().addAll(tenantsButton, biensButton);
+        Button contratsButton = new Button("Contrat");
+        contratsButton.setOnAction(e -> mainController.openContratView());
+
+        root.getChildren().addAll(tenantsButton, biensButton, contratsButton);
 
         Scene scene = new Scene(root, 400, 200);
         stage.setTitle("Accueil");

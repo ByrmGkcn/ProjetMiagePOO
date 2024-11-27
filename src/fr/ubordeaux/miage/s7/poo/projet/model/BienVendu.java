@@ -8,8 +8,13 @@ public class BienVendu implements State {
 
     @Override
     public void handle(Model model) {
-        // Aucune transition possible à partir de cet état
-        throw new IllegalStateException("Le bien est déjà vendu, aucune action possible.");
+    	switch (model.getNextEvent()) {
+		    case DISPONIBLE:
+		        model.setCurrentState(new BienDisponible());
+		        break;
+		    default:
+		        throw new IllegalStateException("Événement non pris en charge dans cet état.");
+    	}
     }
 
     @Override

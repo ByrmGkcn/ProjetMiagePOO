@@ -2,14 +2,16 @@ package fr.ubordeaux.miage.s7.poo.projet.view;
 
 import fr.ubordeaux.miage.s7.poo.projet.controller.MainController;
 import fr.ubordeaux.miage.s7.poo.projet.model.BienImmobilier;
+import fr.ubordeaux.miage.s7.poo.projet.model.Event;
+import fr.ubordeaux.miage.s7.poo.projet.model.Locataire;
 import fr.ubordeaux.miage.s7.poo.projet.model.Model;
+import fr.ubordeaux.miage.s7.poo.projet.model.TypeBien;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -20,19 +22,24 @@ public class ManagementView {
     private final Stage stage;
     private final MainController mainController;
     private final ObservableList<BienImmobilier> biens;
+    private final ObservableList<Locataire> locataires;
 
-    public ManagementView(Stage stage, MainController mainController, ObservableList<BienImmobilier> biens) {
+    // Déclarez la table comme un attribut de classe
+    private TableView<BienImmobilier> table;
+
+    public ManagementView(Stage stage, MainController mainController, ObservableList<BienImmobilier> biens, ObservableList<Locataire> locataires) {
         this.stage = stage;
         this.mainController = mainController;
-        this.biens = biens; // Récupère la liste partagée de biens
+        this.biens = biens;
+        this.locataires = locataires;
     }
 
     public void show() {
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(15));
 
-        // Tableau des biens
-        TableView<BienImmobilier> table = new TableView<>();
+        // Initialisez la table en utilisant l'attribut d'instance
+        table = new TableView<>();
         table.setItems(biens);
 
         // Colonne ID
@@ -59,34 +66,32 @@ public class ManagementView {
         TableColumn<BienImmobilier, String> stateColumn = new TableColumn<>("État");
         stateColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getModel().getCurrentState().getName()));
 
-        // Colonne Suppression
-        TableColumn<BienImmobilier, Void> deleteColumn = new TableColumn<>("Action");
-        deleteColumn.setCellFactory(col -> new TableCell<>() {
-            private final Button deleteButton = new Button();
+        // Colonne locataire
+        TableColumn<BienImmobilier, String> locataireColumn = new TableColumn<>("Locataire");
+        locataireColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getLocataireName()));
 
-            {
-                ImageView trashIcon = new ImageView(new Image(getClass().getResourceAsStream("/icons/trash.png")));
-                trashIcon.setFitWidth(16);
-                trashIcon.setFitHeight(16);
-                deleteButton.setGraphic(trashIcon);
-                deleteButton.setOnAction(e -> {
-                    BienImmobilier bien = getTableView().getItems().get(getIndex());
-                    biens.remove(bien);
-                });
-            }
+        TableColumn<BienImmobilier, Void> actionColumn = new TableColumn<>("Actions");
+        actionColumn.setCellFactory(col -> new TableCell<BienImmobilier, Void>() {
+            private final Button modifyButton = new Button("Modifier");
 
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
+
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    setGraphic(deleteButton);
+                    BienImmobilier bien = getTableView().getItems().get(getIndex());
+                    modifyButton.setOnAction(e -> openModifyDialog(bien)); 
+                    setGraphic(modifyButton);
                 }
             }
         });
+        
+        table.getColumns().addAll(idColumn, addressColumn, postalCodeColumn, cityColumn, valueColumn, locataireColumn, stateColumn, actionColumn);
 
-        table.getColumns().addAll(idColumn, addressColumn, postalCodeColumn, cityColumn, valueColumn, stateColumn, deleteColumn);
+
+
 
         // Boutons
         HBox buttonBox = new HBox(10);
@@ -109,6 +114,7 @@ public class ManagementView {
         stage.show();
     }
 
+    
     private void openAddBienDialog() {
         Stage dialog = new Stage();
         dialog.initOwner(stage);
@@ -130,6 +136,10 @@ public class ManagementView {
         TextField valueField = new TextField();
         valueField.setPromptText("Valeur du bien");
 
+        ComboBox<TypeBien> typeComboBox = new ComboBox<>();
+        typeComboBox.setItems(FXCollections.observableArrayList(TypeBien.values()));
+        typeComboBox.setPromptText("Type de bien");
+
         Button saveButton = new Button("Enregistrer");
         saveButton.setOnAction(e -> {
             try {
@@ -137,11 +147,20 @@ public class ManagementView {
                 String codePostal = postalCodeField.getText();
                 String ville = cityField.getText();
                 double valeur = Double.parseDouble(valueField.getText());
+                TypeBien typeBien = typeComboBox.getValue();
+
+                if (typeBien == null) {
+                    throw new IllegalArgumentException("Veuillez sélectionner un type de bien.");
+                }
+
                 Model model = new Model();
-                biens.add(new BienImmobilier(adresse, codePostal, ville, valeur, model));
+                biens.add(new BienImmobilier(adresse, codePostal, ville, valeur, typeBien, model));
                 dialog.close();
             } catch (NumberFormatException ex) {
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Veuillez entrer une valeur valide.");
+                alert.showAndWait();
+            } catch (IllegalArgumentException ex) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, ex.getMessage());
                 alert.showAndWait();
             }
         });
@@ -151,11 +170,107 @@ public class ManagementView {
             new Label("Code Postal :"), postalCodeField,
             new Label("Ville :"), cityField,
             new Label("Valeur (€) :"), valueField,
+            new Label("Type de bien :"), typeComboBox,
             saveButton
         );
 
-        Scene dialogScene = new Scene(dialogVBox, 300, 250);
+        Scene dialogScene = new Scene(dialogVBox, 300, 300);
         dialog.setScene(dialogScene);
         dialog.show();
     }
+    
+    private void openLouerBienDialog(BienImmobilier bien) {
+        Stage dialog = new Stage();
+        dialog.initOwner(stage);
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Louer le bien");
+
+        VBox dialogVBox = new VBox(10);
+        dialogVBox.setPadding(new Insets(15));
+
+        // Liste des locataires à afficher dans une ComboBox
+        ComboBox<Locataire> locataireComboBox = new ComboBox<>();
+        locataireComboBox.setItems(locataires);
+        locataireComboBox.setPromptText("Sélectionnez un locataire");
+
+        Button louerButton = new Button("Louer");
+        louerButton.setOnAction(e -> {
+            Locataire locataire = locataireComboBox.getValue();
+            if (locataire != null) {
+                bien.louer(locataire); // Appelle la méthode pour louer le bien
+                table.refresh(); // Rafraîchit manuellement le tableau après modification
+                dialog.close();
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Veuillez sélectionner un locataire.");
+                alert.showAndWait();
+            }
+        });
+
+        dialogVBox.getChildren().addAll(
+            new Label("Sélectionnez un locataire :"), locataireComboBox,
+            louerButton
+        );
+
+        Scene dialogScene = new Scene(dialogVBox, 300, 200);
+        dialog.setScene(dialogScene);
+        dialog.show();
+    }
+    
+    private void openModifyDialog(BienImmobilier bien) {
+        Stage dialog = new Stage();
+        dialog.initOwner(stage);
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Modifier le bien");
+
+        VBox dialogVBox = new VBox(10);
+        dialogVBox.setPadding(new Insets(15));
+
+        // Création des boutons pour chaque action
+        Button louerButton = new Button("Louer");
+        louerButton.setOnAction(e -> {
+            openLouerBienDialog(bien); // Louer ouvre une autre pop-up pour sélectionner un locataire
+            dialog.close(); // Ferme la pop-up actuelle
+        });
+
+        Button vendreButton = new Button("Vendre");
+        vendreButton.setOnAction(e -> {
+            bien.getModel().setNextEvent(Event.VENDRE); // Change l'état à "Vendu"
+            bien.liberer();
+            table.refresh(); // Rafraîchit la table
+            dialog.close(); // Ferme la pop-up
+        });
+
+        Button disponibleButton = new Button("Disponible");
+        disponibleButton.setOnAction(e -> {
+            bien.getModel().setNextEvent(Event.DISPONIBLE); // Change l'état à "Disponible"
+            bien.liberer();
+            table.refresh(); // Rafraîchit la table
+            dialog.close(); // Ferme la pop-up
+        });
+
+        // Ajout des boutons uniquement en fonction de l'état actuel
+        String currentState = bien.getModel().getCurrentState().getName();
+        dialogVBox.getChildren().add(new Label("Actions disponibles :"));
+
+        switch (currentState) {
+            case "DISPONIBLE":
+                dialogVBox.getChildren().addAll(louerButton, vendreButton);
+                break;
+            case "LOUE":
+                dialogVBox.getChildren().addAll(disponibleButton, vendreButton);
+                break;
+            case "VENDU":
+                dialogVBox.getChildren().add(disponibleButton);
+                break;
+            default:
+                dialogVBox.getChildren().add(new Label("Aucune action disponible."));
+                break;
+        }
+
+        // Ajouter le contenu et afficher la fenêtre
+        Scene dialogScene = new Scene(dialogVBox, 300, 200);
+        dialog.setScene(dialogScene);
+        dialog.show();
+    }
+
 }

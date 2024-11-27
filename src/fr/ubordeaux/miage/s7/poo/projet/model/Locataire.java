@@ -36,4 +36,8 @@ public class Locataire {
     public String getEmail() {
         return email;
     }
+    
+    public String toString() {
+    	return name + " " + surname;
+    }
 }
