@@ -16,14 +16,14 @@ import java.time.format.DateTimeFormatter;
 import fr.ubordeaux.miage.s7.poo.projet.controller.MainController;
 import fr.ubordeaux.miage.s7.poo.projet.model.BienImmobilier;
 import fr.ubordeaux.miage.s7.poo.projet.model.Locataire;
+import fr.ubordeaux.miage.s7.poo.projet.model.Observer;
 
-public class ContratView {
+public class ContratView implements Observer {
     private final Stage stage;
     private final MainController mainController;
     private final ObservableList<BienImmobilier> biens;
     private final ObservableList<Locataire> locataires;
 
-    // Constructeur pour initialiser les données nécessaires
     public ContratView(Stage stage, MainController mainController, ObservableList<BienImmobilier> biens, ObservableList<Locataire> locataires) {
         this.stage = stage;
         this.mainController = mainController;
@@ -58,8 +58,8 @@ public class ContratView {
         // Colonne de la date de début
         TableColumn<BienImmobilier, String> debutColumn = new TableColumn<>("Début de location");
         debutColumn.setCellValueFactory(cellData -> {
-            if (cellData.getValue().getDateDebutLocation() != null) {
-                return new SimpleStringProperty(cellData.getValue().getDateDebutLocation().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            if (cellData.getValue().getDebutLocation() != null) {
+                return new SimpleStringProperty(cellData.getValue().getDebutLocation().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
             } else {
                 return new SimpleStringProperty("-");
             }
@@ -68,8 +68,8 @@ public class ContratView {
         // Colonne de la date de fin
         TableColumn<BienImmobilier, String> finColumn = new TableColumn<>("Fin de location");
         finColumn.setCellValueFactory(cellData -> {
-            if (cellData.getValue().getDateFinLocation() != null) {
-                return new SimpleStringProperty(cellData.getValue().getDateFinLocation().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            if (cellData.getValue().getFinLocation() != null) {
+                return new SimpleStringProperty(cellData.getValue().getFinLocation().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
             } else {
                 return new SimpleStringProperty("-");
             }
@@ -100,16 +100,13 @@ public class ContratView {
             }
         });
 
-        // Ajouter les colonnes à la table
         table.getColumns().addAll(bienColumn, locataireColumn, debutColumn, finColumn, actionColumn);
 
         root.setCenter(table);
 
-        // Ajouter un bouton Retour
         Button backButton = new Button("Retour");
         backButton.setOnAction(e -> mainController.openHomeView());
 
-        // Ajouter les boutons en bas de la vue
         HBox buttonBox = new HBox(10);
         buttonBox.getChildren().add(backButton);
         root.setBottom(buttonBox);
@@ -120,7 +117,7 @@ public class ContratView {
         stage.show();
     }
 
-    // Méthode pour télécharger le contrat sous forme de fichier texte
+    // Méthode pour télécharger le contrat sous forme de fichier texte (pdf plus compliqué)
     private void downloadContract(BienImmobilier selectedBien) {
         if (selectedBien == null || selectedBien.getLocataire() == null) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Ce bien n'a pas de locataire.");
@@ -141,10 +138,10 @@ public class ContratView {
                 writer.write("Contrat de Location\n");
                 writer.write("Bien immobilier : " + bien.getAdresse() + "\n");
                 writer.write("Locataire : " + locataire.getName() + "\n");
-                writer.write("Début de location : " + (bien.getDateDebutLocation() != null ?
-                        bien.getDateDebutLocation().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "-") + "\n");
-                writer.write("Fin de location : " + (bien.getDateFinLocation() != null ?
-                        bien.getDateFinLocation().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "-") + "\n");
+                writer.write("Début de location : " + (bien.getDebutLocation() != null ?
+                        bien.getDebutLocation().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "-") + "\n");
+                writer.write("Fin de location : " + (bien.getFinLocation() != null ?
+                        bien.getFinLocation().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "-") + "\n");
 
                 Alert alert = new Alert(Alert.AlertType.INFORMATION, "Le contrat a été téléchargé avec succès.");
                 alert.showAndWait();
@@ -154,5 +151,14 @@ public class ContratView {
                 alert.showAndWait();
             }
         }
+    }
+
+    @Override
+    public void update(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Notification de contrat");
+        alert.setHeaderText("Fin de contrat proche !");
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

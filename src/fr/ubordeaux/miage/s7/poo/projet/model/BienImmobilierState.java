@@ -1,13 +1,13 @@
 package fr.ubordeaux.miage.s7.poo.projet.model;
 
-public enum Event {
+public enum BienImmobilierState {
     LOUER("LOUER"),
     VENDRE("VENDRE"),
     DISPONIBLE("DISPONIBLE");
 
     private String text;
 
-    Event(String text) {
+    BienImmobilierState(String text) {
         this.text = text;
     }
 

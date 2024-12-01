@@ -26,7 +26,7 @@ public class LocataireView {
     public LocataireView(Stage stage, MainController mainController, ObservableList<Locataire> locataires) {
         this.stage = stage;
         this.mainController = mainController;
-        this.locataires = locataires; // Utilise la liste de locataires partagée
+        this.locataires = locataires; // Utilise bien la liste de locataires partagée
     }
 
     public void show() {

@@ -2,7 +2,7 @@ package fr.ubordeaux.miage.s7.poo.projet.view;
 
 import fr.ubordeaux.miage.s7.poo.projet.controller.MainController;
 import fr.ubordeaux.miage.s7.poo.projet.model.BienImmobilier;
-import fr.ubordeaux.miage.s7.poo.projet.model.Event;
+import fr.ubordeaux.miage.s7.poo.projet.model.BienImmobilierState;
 import fr.ubordeaux.miage.s7.poo.projet.model.Locataire;
 import fr.ubordeaux.miage.s7.poo.projet.model.Model;
 import fr.ubordeaux.miage.s7.poo.projet.model.TypeBien;
@@ -18,16 +18,15 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class ManagementView {
+public class BienView {
     private final Stage stage;
     private final MainController mainController;
     private final ObservableList<BienImmobilier> biens;
     private final ObservableList<Locataire> locataires;
 
-    // Déclarez la table comme un attribut de classe
     private TableView<BienImmobilier> table;
 
-    public ManagementView(Stage stage, MainController mainController, ObservableList<BienImmobilier> biens, ObservableList<Locataire> locataires) {
+    public BienView(Stage stage, MainController mainController, ObservableList<BienImmobilier> biens, ObservableList<Locataire> locataires) {
         this.stage = stage;
         this.mainController = mainController;
         this.biens = biens;
@@ -38,7 +37,6 @@ public class ManagementView {
         BorderPane root = new BorderPane();
         root.setPadding(new Insets(15));
 
-        // Initialisez la table en utilisant l'attribut d'instance
         table = new TableView<>();
         table.setItems(biens);
 
@@ -88,7 +86,25 @@ public class ManagementView {
             }
         });
         
-        table.getColumns().addAll(idColumn, addressColumn, postalCodeColumn, cityColumn, valueColumn, locataireColumn, stateColumn, actionColumn);
+        TableColumn<BienImmobilier, Void> transactionColumn = new TableColumn<>("Transactions");
+        transactionColumn.setCellFactory(col -> new TableCell<BienImmobilier, Void>() {
+            private final Button transactionButton = new Button("Transactions");
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    BienImmobilier bien = getTableView().getItems().get(getIndex());
+                    transactionButton.setOnAction(e -> openTransactionView(bien)); // Ouvre la vue des transactions
+                    setGraphic(transactionButton);
+                }
+            }
+        });
+        
+        table.getColumns().addAll(idColumn, addressColumn, postalCodeColumn, cityColumn, valueColumn, locataireColumn, stateColumn, actionColumn,transactionColumn);
 
 
 
@@ -174,7 +190,7 @@ public class ManagementView {
             saveButton
         );
 
-        Scene dialogScene = new Scene(dialogVBox, 300, 300);
+        Scene dialogScene = new Scene(dialogVBox, 500, 400);
         dialog.setScene(dialogScene);
         dialog.show();
     }
@@ -216,6 +232,11 @@ public class ManagementView {
         dialog.show();
     }
     
+    private void openTransactionView(BienImmobilier bien) {
+        TransactionView transactionView = new TransactionView(stage, mainController, FXCollections.observableArrayList(bien));
+        transactionView.show();
+    }
+    
     private void openModifyDialog(BienImmobilier bien) {
         Stage dialog = new Stage();
         dialog.initOwner(stage);
@@ -228,24 +249,24 @@ public class ManagementView {
         // Création des boutons pour chaque action
         Button louerButton = new Button("Louer");
         louerButton.setOnAction(e -> {
-            openLouerBienDialog(bien); // Louer ouvre une autre pop-up pour sélectionner un locataire
-            dialog.close(); // Ferme la pop-up actuelle
+            openLouerBienDialog(bien); // ouvre une autre pop-up pour sélectionner un locataire
+            dialog.close(); 
         });
 
         Button vendreButton = new Button("Vendre");
         vendreButton.setOnAction(e -> {
-            bien.getModel().setNextEvent(Event.VENDRE); // Change l'état à "Vendu"
+            bien.getModel().setNextEvent(BienImmobilierState.VENDRE); // Change l'état à "Vendu"
             bien.liberer();
             table.refresh(); // Rafraîchit la table
-            dialog.close(); // Ferme la pop-up
+            dialog.close(); 
         });
 
         Button disponibleButton = new Button("Disponible");
         disponibleButton.setOnAction(e -> {
-            bien.getModel().setNextEvent(Event.DISPONIBLE); // Change l'état à "Disponible"
+            bien.getModel().setNextEvent(BienImmobilierState.DISPONIBLE); // Change l'état à "Disponible"
             bien.liberer();
             table.refresh(); // Rafraîchit la table
-            dialog.close(); // Ferme la pop-up
+            dialog.close();
         });
 
         // Ajout des boutons uniquement en fonction de l'état actuel

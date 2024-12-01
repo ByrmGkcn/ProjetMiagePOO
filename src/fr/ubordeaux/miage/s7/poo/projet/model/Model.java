@@ -5,20 +5,20 @@ import fr.ubordeaux.miage.s7.poo.projet.view.Listener;
 public class Model implements Subject {
 
     private State currentState;
-    private Event nextEvent;
+    private BienImmobilierState nextEvent;
     private Listener listener;
 
     public Model() {
         currentState = new BienDisponible(); // Il s'agit de l'état inital d'un bien !
     }
 
-    public Event getNextEvent() {
+    public BienImmobilierState getNextEvent() {
         return nextEvent;
     }
 
-    public void setNextEvent(Event nextEvent) {
+    public void setNextEvent(BienImmobilierState nextEvent) {
         this.nextEvent = nextEvent;
-        currentState.handle(this); // Appelle le gestionnaire de l'état actuel
+        currentState.handle(this);
     }
 
     public void setCurrentState(State currentState) {

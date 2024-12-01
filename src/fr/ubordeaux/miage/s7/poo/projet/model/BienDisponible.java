@@ -26,7 +26,12 @@ public class BienDisponible implements State {
     }
 
     @Override
-    public List<Event> getAvailableEvents() {
-        return List.of(Event.LOUER, Event.VENDRE);
+    public List<BienImmobilierState> getAvailableEvents() {
+        return List.of(BienImmobilierState.LOUER, BienImmobilierState.VENDRE);
+    }
+    
+    @Override
+    public BienImmobilierState toBienImmobilierState() {
+        return BienImmobilierState.DISPONIBLE;
     }
 }

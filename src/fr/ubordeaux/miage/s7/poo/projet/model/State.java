@@ -5,5 +5,6 @@ import java.util.List;
 public interface State {
     void handle(Model model);
     String getName();
-    List<Event> getAvailableEvents();
+    List<BienImmobilierState> getAvailableEvents();
+    BienImmobilierState toBienImmobilierState(); 
 }

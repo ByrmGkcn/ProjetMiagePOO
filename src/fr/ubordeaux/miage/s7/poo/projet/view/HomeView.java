@@ -29,9 +29,12 @@ public class HomeView {
         Button contratsButton = new Button("Contrat");
         contratsButton.setOnAction(e -> mainController.openContratView());
 
-        root.getChildren().addAll(tenantsButton, biensButton, contratsButton);
+        Button patrimoineButton = new Button("Patrimoine");
+        patrimoineButton.setOnAction(e -> mainController.openPatrimoineView());
+        
+        root.getChildren().addAll(tenantsButton, biensButton, contratsButton, patrimoineButton);
 
-        Scene scene = new Scene(root, 400, 200);
+        Scene scene = new Scene(root, 600, 200); 
         stage.setTitle("Accueil");
         stage.setScene(scene);
         stage.show();

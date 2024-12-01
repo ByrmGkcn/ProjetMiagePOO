@@ -1,6 +1,6 @@
 package fr.ubordeaux.miage.s7.poo.projet.controller;
 
-import fr.ubordeaux.miage.s7.poo.projet.view.ManagementView;
+import fr.ubordeaux.miage.s7.poo.projet.view.BienView;
 import javafx.stage.Stage;
 
 public class ManagementController {
@@ -16,7 +16,7 @@ public class ManagementController {
         var biens = mainController.getBiens();
         var locataires = mainController.getLocataires(); 
 
-        ManagementView managementView = new ManagementView(stage, mainController, biens, locataires);
+        BienView managementView = new BienView(stage, mainController, biens, locataires);
         managementView.show();
     }
 }

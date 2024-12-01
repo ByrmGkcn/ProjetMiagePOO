@@ -23,7 +23,12 @@ public class BienVendu implements State {
     }
 
     @Override
-    public List<Event> getAvailableEvents() {
-        return List.of(); // Aucune action possible après la vente
+    public List<BienImmobilierState> getAvailableEvents() {
+        return List.of();
+    }
+    
+    @Override
+    public BienImmobilierState toBienImmobilierState() {
+        return BienImmobilierState.VENDRE;
     }
 }
